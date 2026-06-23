@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: -0.011em;
+  }
+}
+
+@layer components {
+  /* Glass card effect */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .dark .glass-card {
+    background: rgba(30, 30, 30, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* Subtle gradient background */
+  .bg-app {
+    background: linear-gradient(145deg, #f8f9fc 0%, #f0f2f8 50%, #e8ebf4 100%);
+  }
+  .dark .bg-app {
+    background: linear-gradient(145deg, #0f1117 0%, #13141b 50%, #181923 100%);
+  }
+
+  /* Pill badge */
+  .pill {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply px-4 py-2 rounded-lg font-medium text-sm transition-all duration-150
+           bg-gray-900 text-white hover:bg-gray-800 active:scale-[0.97]
+           dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100;
+  }
+
+  /* Ghost button */
+  .btn-ghost {
+    @apply px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150
+           text-gray-600 hover:bg-gray-100 active:bg-gray-200
+           dark:text-gray-400 dark:hover:bg-white/10 dark:active:bg-white/15;
+  }
+
+  /* Input field */
+  .input-field {
+    @apply w-full px-3.5 py-2.5 rounded-lg text-sm
+           bg-white border border-gray-200
+           text-gray-900 placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400
+           transition-all duration-150
+           dark:bg-white/5 dark:border-white/10 dark:text-white dark:placeholder-gray-500
+           dark:focus:ring-white/10 dark:focus:border-white/30;
+  }
+
+  /* Card surface */
+  .surface {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm
+           dark:bg-white/[0.03] dark:border-white/[0.06];
+  }
+
+  /* Checkbox custom */
+  .checkbox-custom {
+    @apply w-[18px] h-[18px] rounded-md border-2 border-gray-300
+           appearance-none cursor-pointer transition-all duration-150
+           checked:bg-gray-900 checked:border-gray-900
+           dark:border-gray-600 dark:checked:bg-white dark:checked:border-white;
+  }
+  .checkbox-custom:checked::after {
+    content: '✓';
+    display: block;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 16px;
+  }
+  .dark .checkbox-custom:checked::after {
+    color: #111;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+/* Animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in { animation: fade-in 0.2s ease-out; }
+.animate-scale-in { animation: scale-in 0.15s ease-out; }
+.animate-slide-up { animation: slide-up 0.25s ease-out; }
+
+/* Stagger children */
+.stagger-children > * {
+  animation: fade-in 0.25s ease-out both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 30ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 90ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 150ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 210ms; }
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.dark *:focus-visible {
+  outline-color: #fff;
+}
+
+/* Selection */
+::selection {
+  background: rgba(99, 91, 255, 0.2);
+}
+
+/* Date input */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.4;
+  cursor: pointer;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.7;
+}
+
+/* Transition override - only on things that need it */
+.transition-default {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
