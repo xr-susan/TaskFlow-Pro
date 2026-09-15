@@ -37,4 +37,10 @@ dist-ssr
 
 # Testing
 coverage
-package-lock.json
+
+# Vite config temp files
+vite.config.ts.timestamp-*.mjs
+
+# NOTE: package-lock.json is intentionally COMMITTED.
+# CI relies on `npm ci` + actions/setup-node `cache: npm`,
+# both of which require a lockfile in the repository.

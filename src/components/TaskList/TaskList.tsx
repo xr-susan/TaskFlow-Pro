@@ -1,6 +1,6 @@
 /**
  * TaskList component
- * Displays filtered tasks with empty state
+ * Displays filtered tasks with empty state and drag-to-reorder support
  */
 
 import { useState } from 'react';
@@ -10,9 +10,11 @@ import TaskCard from '../TaskCard/TaskCard';
 import TaskForm from '../TaskForm/TaskForm';
 
 const TaskList = () => {
-  const { getFilteredTasks, filters, selectedTaskIds } = useTaskStore();
+  const { getFilteredTasks, filters, selectedTaskIds, reorderTasks } = useTaskStore();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 
   const tasks = getFilteredTasks();
 
@@ -24,6 +26,31 @@ const TaskList = () => {
   const handleCloseForm = () => {
     setEditingTask(null);
     setShowForm(false);
+  };
+
+  const clearDragState = () => {
+    setDraggedId(null);
+    setDropTargetId(null);
+  };
+
+  /**
+   * Reordering works on the global `order` field rather than on the visible
+   * index, so dropping still behaves correctly while a filter is active.
+   */
+  const handleDrop = (targetTask: Task) => {
+    if (draggedId && draggedId !== targetTask.id) {
+      reorderTasks(draggedId, targetTask.order);
+    }
+    clearDragState();
+  };
+
+  /** Move a task one slot up or down within the currently visible list. */
+  const handleMove = (task: Task, direction: 'up' | 'down') => {
+    const index = tasks.findIndex((candidate) => candidate.id === task.id);
+    const neighbour = direction === 'up' ? tasks[index - 1] : tasks[index + 1];
+    if (neighbour) {
+      reorderTasks(task.id, neighbour.order);
+    }
   };
 
   if (tasks.length === 0) {
@@ -81,6 +108,13 @@ const TaskList = () => {
             task={task}
             onEdit={handleEdit}
             isSelected={selectedTaskIds.includes(task.id)}
+            isDragging={draggedId === task.id}
+            isDropTarget={dropTargetId === task.id && draggedId !== task.id}
+            onDragStart={(dragged) => setDraggedId(dragged.id)}
+            onDragEnd={clearDragState}
+            onDragOver={(over) => setDropTargetId(over.id)}
+            onDrop={handleDrop}
+            onMove={handleMove}
           />
         ))}
       </div>

@@ -1,8 +1,9 @@
 /**
  * TaskCard component
- * Clean, minimal task card with subtle interactions
+ * Clean, minimal task card with subtle interactions and drag-to-reorder support
  */
 
+import { type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Task, PRIORITY_CONFIG } from '../../types/task';
 import { useTaskStore } from '../../stores/taskStore';
 import { formatDate, isOverdue, getDaysUntil } from '../../utils/formatDate';
@@ -11,9 +12,30 @@ interface TaskCardProps {
   task: Task;
   onEdit: (task: Task) => void;
   isSelected: boolean;
+  /** This card is currently being dragged. */
+  isDragging?: boolean;
+  /** This card is the current drop target. */
+  isDropTarget?: boolean;
+  onDragStart?: (task: Task) => void;
+  onDragEnd?: () => void;
+  onDragOver?: (task: Task) => void;
+  onDrop?: (task: Task) => void;
+  /** Keyboard-accessible reordering, used by the grip handle. */
+  onMove?: (task: Task, direction: 'up' | 'down') => void;
 }
 
-const TaskCard = ({ task, onEdit, isSelected }: TaskCardProps) => {
+const TaskCard = ({
+  task,
+  onEdit,
+  isSelected,
+  isDragging = false,
+  isDropTarget = false,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+  onMove,
+}: TaskCardProps) => {
   const { toggleTask, deleteTask, selectTask, getCategoryById } = useTaskStore();
   const category = task.categoryId ? getCategoryById(task.categoryId) : null;
   const priorityConfig = PRIORITY_CONFIG[task.priority];
@@ -26,13 +48,67 @@ const TaskCard = ({ task, onEdit, isSelected }: TaskCardProps) => {
     }
   };
 
+  const handleGripKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      onMove?.(task, 'up');
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      onMove?.(task, 'down');
+    }
+  };
+
   return (
     <div
+      draggable
+      onDragStart={(event) => {
+        // Firefox refuses to start a drag unless some data is set.
+        event.dataTransfer.setData('text/plain', task.id);
+        event.dataTransfer.effectAllowed = 'move';
+        onDragStart?.(task);
+      }}
+      onDragEnd={onDragEnd}
+      onDragOver={(event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        onDragOver?.(task);
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        onDrop?.(task);
+      }}
+      data-dragging={isDragging ? 'true' : undefined}
+      data-drop-target={isDropTarget ? 'true' : undefined}
       className={`group surface p-4 transition-all duration-150 hover:shadow-card-hover ${
         isSelected ? 'ring-2 ring-accent/30 border-accent/20' : ''
-      } ${task.completed ? 'opacity-60' : ''}`}
+      } ${task.completed ? 'opacity-60' : ''} ${
+        isDragging ? 'opacity-40' : ''
+      } ${
+        isDropTarget ? 'ring-2 ring-accent/40 border-accent/30' : ''
+      }`}
     >
       <div className="flex items-start gap-3">
+        {/* Drag handle */}
+        <button
+          type="button"
+          aria-label={`Reorder ${task.title}`}
+          title="拖动排序，或用方向键上/下移动"
+          onKeyDown={handleGripKeyDown}
+          className="flex-shrink-0 mt-1 p-0.5 rounded text-neutral-300 dark:text-neutral-600
+                     cursor-grab active:cursor-grabbing hover:text-neutral-500 dark:hover:text-neutral-300
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40
+                     opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-150"
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <circle cx="5.5" cy="3.5" r="1.25" />
+            <circle cx="10.5" cy="3.5" r="1.25" />
+            <circle cx="5.5" cy="8" r="1.25" />
+            <circle cx="10.5" cy="8" r="1.25" />
+            <circle cx="5.5" cy="12.5" r="1.25" />
+            <circle cx="10.5" cy="12.5" r="1.25" />
+          </svg>
+        </button>
+
         {/* Checkbox */}
         <div className="pt-0.5 flex items-center gap-2.5">
           <input
